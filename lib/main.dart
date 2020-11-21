@@ -52,14 +52,6 @@ class _MyHomePageState extends State<MyHomePage>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-        appBar: TabBar(
-      indicator: const BoxDecoration(),
-      labelColor: Colors.black12,
-      indicatorPadding: EdgeInsets.symmetric(horizontal: 10),
-      indicatorSize: TabBarIndicatorSize.label,
-      tabs: tabs,
-      controller: tabController,
-    ));
+    return Scaffold(body: Stack());
   }
 }
