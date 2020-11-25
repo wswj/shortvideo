@@ -5,8 +5,8 @@ class HomeMain extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      child: PageView(
+    return Scaffold(
+      body: PageView(
         scrollDirection: Axis.vertical,
         children: <Widget>[
           Center(child: Text("data1")),

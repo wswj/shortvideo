@@ -1,65 +1,63 @@
+import 'dart:math';
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:shortvideo/page/home/home-main.dart';
 
 void main() {
+  ///自定义报错页面
+  if(kReleaseMode){
+    ErrorWidget.builder=(FlutterErrorDetails flutterErrorDetails){
+      debugPrint(flutterErrorDetails.toString());
+      return Material(child:Center(child: Text("发生了没有处理的错误",textAlign: TextAlign.center,),));
+    };
+  }
   runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    SystemChrome.setEnabledSystemUIOverlays([SystemUiOverlay.bottom]);
     return MaterialApp(
         title: 'Flutter Demo',
         theme: ThemeData(
-          primarySwatch: Colors.blue,
+          primaryColor: Colors.black,
           visualDensity: VisualDensity.adaptivePlatformDensity,
+          
         ),
-        home: SafeArea(
-          child: MyHomePage(title: 'Flutter Demo Home Page'),
-        ));
+        home:MyHome());
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  MyHomePage({Key key, this.title}) : super(key: key);
-  final String title;
+class MyHome extends StatefulWidget {
+  MyHome({Key key}) : super(key: key);
+
   @override
-  _MyHomePageState createState() => _MyHomePageState();
+  _MyHomeState createState() => _MyHomeState();
 }
 
-class _MyHomePageState extends State<MyHomePage>
-    with SingleTickerProviderStateMixin {
-  TabController tabController;
-  List<Tab> tabs;
+class _MyHomeState extends State<MyHome> with SingleTickerProviderStateMixin{
+  AnimationController _animationController;
+  Animation _animation;
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-    tabs = [
-      Tab(
-        text: "同城",
-      ),
-      Tab(
-        text: "关注",
-      ),
-      Tab(
-        text: "推荐",
-      )
-    ];
-    tabController =
-        TabController(length: tabs.length, vsync: this, initialIndex: 2);
+    _animationController=AnimationController(vsync: this,duration:Duration(milliseconds:9000));
+    _animation=Tween(begin:1.0,end:0.0).animate(_animationController);
+    _animation.addStatusListener((status) {if(status==AnimationStatus.completed){
+      Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder:(context){return HomeMain();}), (route) => route==null);
+    }});
+    _animationController.forward();
   }
-
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-        appBar: TabBar(
-      indicator: const BoxDecoration(),
-      labelColor: Colors.black12,
-      indicatorPadding: EdgeInsets.symmetric(horizontal: 10),
-      indicatorSize: TabBarIndicatorSize.label,
-      tabs: tabs,
-      controller: tabController,
-    ));
+    Random random=Random();
+    var mainImg="main"+(1+random.nextInt(7)).toString()+".jpg";
+    return FadeTransition(opacity: _animation,child: Image.asset("lib/imgs/"+mainImg,fit: BoxFit.cover,),);
   }
 }
+
+
