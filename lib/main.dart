@@ -22,6 +22,7 @@ class MyApp extends StatelessWidget {
     SystemChrome.setEnabledSystemUIOverlays([SystemUiOverlay.bottom]);
     return MaterialApp(
         title: 'Flutter Demo',
+        
         theme: ThemeData(
           primaryColor: Colors.black,
           visualDensity: VisualDensity.adaptivePlatformDensity,
