@@ -6,7 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:shortvideo/page/home/home-main.dart';
 
 void main() {
-  ///自定义报错页面987
+  ///自定义报错页面987345
   if(kReleaseMode){
     ErrorWidget.builder=(FlutterErrorDetails flutterErrorDetails){
       debugPrint(flutterErrorDetails.toString());
