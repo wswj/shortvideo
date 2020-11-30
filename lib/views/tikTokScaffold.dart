@@ -91,6 +91,7 @@ class _TikTokScaffoldState extends State<TikTokScaffold>
   double offsetY;
   double inMiddle = 0;
   double screenWidth;
+  bool absorbing = false;
   @override
   void initState() {
     // TODO: implement initState
@@ -118,11 +119,61 @@ class _TikTokScaffoldState extends State<TikTokScaffold>
 
   @override
   Widget build(BuildContext context) {
+    screenWidth = MediaQuery.of(context).size.width;
+    Widget body = Stack(
+      children: <Widget>[
+        _LeftPageTransform(
+          offsetX: offsetX,
+          content: widget.leftPage,
+        ),
+        _MiddlePage(
+          absorbing: absorbing,
+          onTopDrag: () {
+            setState(() {});
+          },
+          offsetX: offsetX,
+          offsetY: offsetY,
+          header: widget.header,
+          tabBar: widget.tabBar,
+          isStack: !widget.hasBottomPadding,
+          page: widget.page,
+        ),
+        _RightPageTransform(
+          offsetX: offsetX,
+          offsetY: offsetY,
+          content: widget.leftPage,
+        )
+      ],
+    );
+    //增加手势控制
+    body=GestureDetector(
+      //当垂直滑动时
+      onVerticalDragUpdate: ,
+    )
     return Container(
       child: Text(""),
     );
   }
+  ///计算offsetY
+  ///手指上滑[absorbing]为false，不阻止事件，事件交给底层pageview处理
+  ///处于第一页且是下拉，则拦截滑动组件
+  void caculateOffsetY(DragUpdateDetails details{
+    if(!widget.enableGesture){
+      return;
+    }
+    if(inMiddle !=0){
+      setState(() {
+        absorbing=false;
+      });
+      return;
+    }
+    //
+    final tempY=offsetY+details.delta.dy/2;
+    //如果当前播放的视频序号为0
+    if(widget.currentIndex==0){
 
+    }
+  }
   Future animateTo([double end = 0.0]) {
     final curve = curvedAnimation();
     animationX = Tween(begin: offsetX, end: end).animate(curve)
