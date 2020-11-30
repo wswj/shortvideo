@@ -91,6 +91,7 @@ class _TikTokScaffoldState extends State<TikTokScaffold>
   double offsetY;
   double inMiddle = 0;
   double screenWidth;
+  //是否屏蔽下拉刷新
   bool absorbing = false;
   @override
   void initState() {
@@ -146,34 +147,65 @@ class _TikTokScaffoldState extends State<TikTokScaffold>
       ],
     );
     //增加手势控制
-    body=GestureDetector(
-      //当垂直滑动时
-      onVerticalDragUpdate: ,
-    )
+    body = GestureDetector(
+      ///当垂直滑动时
+      onVerticalDragUpdate: caculateOffsetY,
+
+      ///当垂直滑动结束
+      onVerticalDragEnd: (_) async {
+        if (!widget.enableGesture) return;
+        absorbing = false;
+        if (offsetY != 0) {
+          await animateToTop();
+        }
+      },
+      onHorizontalDragEnd: (details) {
+        return onHorizontalDragEnd(
+          details,
+          screenWidth,
+        );
+      },
+    );
     return Container(
       child: Text(""),
     );
   }
+
   ///计算offsetY
   ///手指上滑[absorbing]为false，不阻止事件，事件交给底层pageview处理
   ///处于第一页且是下拉，则拦截滑动组件
-  void caculateOffsetY(DragUpdateDetails details{
-    if(!widget.enableGesture){
+  void caculateOffsetY(DragUpdateDetails details) {
+    if (!widget.enableGesture) {
       return;
     }
-    if(inMiddle !=0){
+    if (inMiddle != 0) {
       setState(() {
-        absorbing=false;
+        absorbing = false;
       });
       return;
     }
     //
-    final tempY=offsetY+details.delta.dy/2;
+    final tempY = offsetY + details.delta.dy / 2;
     //如果当前播放的视频序号为0
-    if(widget.currentIndex==0){
-
+    if (widget.currentIndex == 0) {
+      if (tempY > 0) {
+        if (tempY < 40) {
+          offsetY = tempY;
+        } else if (offsetY != 40) {
+          offsetY = 40;
+        }
+      } else {
+        absorbing = false;
+      }
+      setState(() {});
+    } else {
+      ///如果当前播放视频序号不为0
+      absorbing = false;
+      offsetY = 0;
+      setState(() {});
     }
   }
+
   Future animateTo([double end = 0.0]) {
     final curve = curvedAnimation();
     animationX = Tween(begin: offsetX, end: end).animate(curve)
@@ -192,6 +224,38 @@ class _TikTokScaffoldState extends State<TikTokScaffold>
         vsync: this);
     return CurvedAnimation(
         parent: _animationControllerX, curve: Curves.easeOutCubic);
+  }
+
+  ///滑动到顶部
+  ///[offsetY] to 0.0
+  Future animateToTop() {
+    _animationControllerY = AnimationController(
+        vsync: this,
+        duration: Duration(milliseconds: offsetY.abs() * 1000 ~/ 60));
+    final curve = CurvedAnimation(
+        parent: _animationControllerY, curve: Curves.easeOutCubic);
+    animationY = Tween(begin: offsetY, end: 0.0).animate(curve)
+      ..addListener(() {
+        setState(() {
+          offsetY = animationY.value;
+        });
+      });
+    return _animationControllerY.forward();
+  }
+
+  ///水平方向滑动结束
+  onHorizontalDragEnd(details, screenWidth) {
+    if (!widget.enableGesture) {
+      return;
+    }
+    print('velocity:${details.velocity}');
+
+    ///获取水平滑动的速度
+    var vOffset = details.velocity.pixelsPersecond.dx;
+    //如果速度很快且页面处于中间页面时
+    if (vOffset > scrollSpeed && inMiddle == 0) {
+      //去右边页面
+    }
   }
 }
 
