@@ -157,18 +157,51 @@ class _TikTokScaffoldState extends State<TikTokScaffold>
         absorbing = false;
         if (offsetY != 0) {
           await animateToTop();
+          widget.onPullDownRefresh?.call();
+          setState(() {});
         }
       },
+      //当水平滑动结束时
       onHorizontalDragEnd: (details) {
         return onHorizontalDragEnd(
           details,
           screenWidth,
         );
       },
+      //当水平方向滑动开始时
+      onHorizontalDragStart: (_) {
+        if (!widget.enableGesture) return;
+        //?.  语法糖 A?.B 如果A为null 返回null，如果A不为null返回A.B 如下如果_animationController不为空则调用_animationController.stop()方法
+        _animationControllerX?.stop();
+        _animationControllerY?.stop();
+      },
+      onHorizontalDragUpdate: (details) {
+        return onHorizontalDragUpdate(
+          details,
+          screenWidth,
+        );
+      },
+      child: body,
     );
-    return Container(
-      child: Text(""),
-    );
+
+    ///WillPopScope返回true表示退出应用,false不退出
+    body = WillPopScope(
+        child: Scaffold(
+          body: body,
+          backgroundColor: Colors.black,
+          resizeToAvoidBottomInset: false,
+        ),
+        onWillPop: () async {
+          if (!widget.enableGesture) {
+            return true;
+          }
+          if (inMiddle == 0) {
+            return true;
+          }
+          widget.controller.animateToMiddle();
+          return false;
+        });
+    return body;
   }
 
   ///计算offsetY
@@ -243,6 +276,26 @@ class _TikTokScaffoldState extends State<TikTokScaffold>
     return _animationControllerY.forward();
   }
 
+  ///水平滑动时
+  void onHorizontalDragUpdate(details, screenWidth) {
+    if (!widget.enableGesture) {
+      return;
+    }
+    if (offsetX + details.delta.dx >= screenWidth) {
+      setState(() {
+        offsetX = screenWidth;
+      });
+    } else if (offsetX + details.delta.dx <= -screenWidth) {
+      setState(() {
+        offsetX = -screenWidth;
+      });
+    } else {
+      setState(() {
+        offsetX += details.delta.dx;
+      });
+    }
+  }
+
   ///水平方向滑动结束
   onHorizontalDragEnd(details, screenWidth) {
     if (!widget.enableGesture) {
@@ -254,7 +307,29 @@ class _TikTokScaffoldState extends State<TikTokScaffold>
     var vOffset = details.velocity.pixelsPersecond.dx;
     //如果速度很快且页面处于中间页面时
     if (vOffset > scrollSpeed && inMiddle == 0) {
+      //去左边页面
+      return animateToPage(TikTokPagePositon.left);
+    } else if (vOffset < -scrollSpeed && inMiddle == 0) {
       //去右边页面
+      return animateToPage(TikTokPagePositon.right);
+    } else if (inMiddle > 0 && vOffset < -scrollSpeed) {
+      return animateToPage(TikTokPagePositon.middle);
+    } else if (inMiddle < 0 && vOffset > scrollSpeed) {
+      if (inMiddle < 0 && vOffset > scrollSpeed) {
+        return animateToPage(TikTokPagePositon.middle);
+      }
+    }
+
+    ///当滑动停止时，根据offsetX的偏移量进行动画
+    if (offsetX.abs() < screenWidth * 0.5) {
+      //去中间页面
+      return animateToPage(TikTokPagePositon.middle);
+    } else if (offsetX > 0) {
+      //去左边页面
+      return animateToPage(TikTokPagePositon.left);
+    } else {
+      //去右边页面
+      return animateToPage(TikTokPagePositon.right);
     }
   }
 }

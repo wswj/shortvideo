@@ -25,7 +25,16 @@ dependencies:
     sdk: flutter
   shared_preferences: ^0.5.12+4
   fijkplayer: ^0.8.7
-
+  provider: ^4.3.2+2
+  dio: ^3.0.10
+  #提示组件参考https://pub.dev/packages/jhtoast
+  jhtoast: ^0.5.0
+  #区分是移动网络连接还是wifi连接
+  connectivity: ^0.4.9
+  #ui组件库
+  flui: 0.9.2
+  #Dart常用工具类库。包含日期，正则，倒计时，时间轴等工具类。参考https://pub.dev/packages/common_utils
+  flustars: ^0.3.2
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^0.1.3
